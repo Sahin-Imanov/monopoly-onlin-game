@@ -1,0 +1,11 @@
+export const MAX_HEALTH=20,FIRE_DAMAGE=2,LAVA_DAMAGE=2,SHOT_COOLDOWN=.58,ROUND_TIME=100;
+export const STAGES=[10.5,9,7.5,6,4.5,3,1.9];
+export function zoneAt(time){const start=7,period=7,duration=2;if(time<start)return {radius:STAGES[0],stage:0,next:start-time,warning:time>=start-3};const stage=Math.min(STAGES.length-1,Math.floor((time-start)/period)+1),local=(time-start)%period,from=STAGES[stage-1],to=STAGES[stage];return {radius:stage===STAGES.length-1&&time>=start+(stage-1)*period+duration?to:from+(to-from)*Math.min(1,local/duration),stage,next:stage===STAGES.length-1?0:period-local,warning:stage<STAGES.length-1&&local>=period-3}}
+export function applyDamage(player,amount){if(player.dead)return false;player.hp=Math.max(0,player.hp-amount);return player.hp===0}
+export function lavaTick(player,dt,inLava){if(player.dead)return 0;if(!inLava){player.lavaTime=0;player.wasInLava=false;return 0}if(!player.wasInLava){player.wasInLava=true;player.lavaTime=0;return LAVA_DAMAGE}player.lavaTime+=dt;let damage=0;while(player.lavaTime>=1-1e-9){player.lavaTime=Math.max(0,player.lavaTime-1);damage+=LAVA_DAMAGE}return damage}
+export function segmentHit(ax,az,bx,bz,px,pz,radius){const dx=bx-ax,dz=bz-az,d=dx*dx+dz*dz,t=d?Math.max(0,Math.min(1,((px-ax)*dx+(pz-az)*dz)/d)):0;return Math.hypot(ax+dx*t-px,az+dz*t-pz)<=radius}
+export function ranking(players){return [...players].sort((a,b)=>Number(a.dead)-Number(b.dead)||(!a.dead?b.hp-a.hp:b.death-a.death)||a.id-b.id)}
+
+export const KNOCKBACK_DISTANCE=3,STUN_DURATION=.5,SLIDE_DURATION=.18;
+export function beginKnockback(p,dx,dz){const length=Math.hypot(dx,dz)||1;p.knockDX=dx/length;p.knockDZ=dz/length;p.knockElapsed=0;p.stun=STUN_DURATION;p.vx=p.vz=0;p.dodge=0;p.y=0;}
+export function stepKnockback(p,dt){if(!(p.stun>0))return 0;const before=p.knockElapsed;p.knockElapsed=before+dt>=STUN_DURATION-1e-9?STUN_DURATION:before+dt;const ease=t=>{const u=Math.min(1,t/SLIDE_DURATION);return u*u*(3-2*u)},distance=(ease(p.knockElapsed)-ease(before))*KNOCKBACK_DISTANCE;p.x+=p.knockDX*distance;p.z+=p.knockDZ*distance;p.stun=Math.max(0,STUN_DURATION-p.knockElapsed);const t=p.knockElapsed,fall=Math.min(1,t/.08),rise=Math.min(1,Math.max(0,(t-.32)/.18));return -1.2*fall*(1-rise);}

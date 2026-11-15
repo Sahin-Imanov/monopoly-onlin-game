@@ -1,0 +1,17 @@
+{
+  "name": "monopoli-online",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Monopoli + four authoritative online 3D islands",
+  "engines": {
+    "node": ">=22 <25"
+  },
+  "scripts": {
+    "start": "node server.cjs",
+    "test": "node --test test/*.test.cjs && node test/client-smoke.cjs laser && node test/client-smoke.cjs lava && node test/client-smoke.cjs cannon && node test/client-smoke.cjs mine",
+    "dev": "node server.cjs"
+  },
+  "dependencies": {
+    "ws": "^8.18.3"
+  }
+}
